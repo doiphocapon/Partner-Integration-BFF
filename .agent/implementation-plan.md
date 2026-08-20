@@ -29,14 +29,18 @@ Status legend: `[ ]` not started, `[~]` in progress, `[x]` completed, `[!]` bloc
 
 ## Phase 3 — Partner verification
 
-- [ ] Dummy verification endpoint (`POST /api/v1/internal/partner-verification`) — injectable
-      randomness for deterministic testing, ~30% throws/timeout, ~70% returns verified result.
-- [ ] `IPartnerVerificationService` + HTTP implementation using a typed `HttpClient`.
-- [ ] Resilience pipeline configured (retry, backoff, per-attempt timeout) via
-      `Microsoft.Extensions.Http.Resilience`.
-- [ ] Checkpoint: unit tests prove retry-after-timeout, success-after-retry,
-      failure-after-exhaustion with exact attempt counts (fake `DelegatingHandler`, no real
-      delay).
+- [x] Dummy verification endpoint (`POST /api/v1/internal/partner-verification`) — ~30% throws
+      `TimeoutException` (surfaces as transient 500), ~70% returns `IsVerified: true`.
+- [x] `IPartnerVerificationService` + `HttpPartnerVerificationService` using a typed `HttpClient`;
+      maps non-success/transient exceptions to `ServiceUnavailable` (never throws to the caller
+      unless the caller's own cancellation token fired).
+- [x] Resilience pipeline configured (retry: 3 attempts, exponential backoff + jitter; per-attempt
+      timeout) via `Microsoft.Extensions.Http.Resilience`'s `AddResilienceHandler`, no circuit
+      breaker.
+- [x] Checkpoint: 5 new unit tests (21 total) prove successful verification, retry-after-transient-
+      failure, success-after-retry, failure-after-retry-exhaustion (exact call counts via
+      `SequenceHttpMessageHandler` + a real Polly pipeline with 1ms constant delay — no real
+      wall-clock wait, no flakiness).
 
 ## Phase 4 — Messaging
 
