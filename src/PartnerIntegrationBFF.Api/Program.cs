@@ -1,9 +1,12 @@
 using FluentValidation;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
+using Microsoft.OpenApi;
 using PartnerIntegrationBFF.Api.Contracts;
+using PartnerIntegrationBFF.Api.ErrorHandling;
 using PartnerIntegrationBFF.Api.Messaging;
 using PartnerIntegrationBFF.Api.Options;
+using PartnerIntegrationBFF.Api.Security;
 using PartnerIntegrationBFF.Api.Services;
 using PartnerIntegrationBFF.Api.Validation;
 using Polly;
@@ -16,7 +19,33 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition(ApiKeyAuthenticationOptions.SchemeName, new OpenApiSecurityScheme
+    {
+        Name = ApiKeyAuthenticationHandler.HeaderName,
+        Type = SecuritySchemeType.ApiKey,
+        In = ParameterLocation.Header,
+        Description = "Partner API key, e.g. 'X-Api-Key: {your-key}'.",
+    });
+    options.AddSecurityRequirement(document => new OpenApiSecurityRequirement
+    {
+        [new OpenApiSecuritySchemeReference(ApiKeyAuthenticationOptions.SchemeName, document)] = new List<string>(),
+    });
+});
+
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
+builder.Services.AddOptions<ApiKeySecurityOptions>()
+    .BindConfiguration(ApiKeySecurityOptions.SectionName)
+    .ValidateOnStart();
+
+builder.Services
+    .AddAuthentication(ApiKeyAuthenticationOptions.SchemeName)
+    .AddScheme<ApiKeyAuthenticationOptions, ApiKeyAuthenticationHandler>(ApiKeyAuthenticationOptions.SchemeName, _ => { });
+
+builder.Services.AddAuthorization();
 
 builder.Services.AddOptions<SupportedCurrenciesOptions>()
     .BindConfiguration(SupportedCurrenciesOptions.SectionName)
@@ -64,6 +93,8 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
+app.UseExceptionHandler();
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -73,9 +104,12 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.Run();
+
+public partial class Program;

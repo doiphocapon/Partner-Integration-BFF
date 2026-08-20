@@ -64,12 +64,21 @@ Status legend: `[ ]` not started, `[~]` in progress, `[x]` completed, `[!]` bloc
 
 ## Phase 5 — Endpoint wiring & cross-cutting
 
-- [ ] `PartnerTransactionsController`: validate → verify → publish → map to response/ProblemDetails.
-- [ ] Global exception handler (`IExceptionHandler`) → ProblemDetails for unhandled exceptions.
-- [ ] API-key authentication handler + middleware wiring, applied to the public endpoint.
-- [ ] Swagger/OpenAPI configuration (incl. API key security definition).
-- [ ] `/health` endpoint (self + RabbitMQ).
-- [ ] Checkpoint: `dotnet build` clean; manual smoke test via Swagger UI.
+- [x] `PartnerTransactionsController`: validate → verify → publish → map to response/ProblemDetails
+      (400 validation, 422 not-verified, 503 verification-unavailable, 503 publish-failed, 202
+      accepted).
+- [x] Global exception handler (`GlobalExceptionHandler : IExceptionHandler`) → ProblemDetails for
+      unhandled exceptions.
+- [x] API-key authentication handler (`ApiKeyAuthenticationHandler`, `X-Api-Key` header) applied
+      to `PartnerTransactionsController` only; 401 responses are ProblemDetails too.
+- [x] Swagger/OpenAPI configuration incl. API key security definition/requirement (Microsoft.OpenApi
+      v2 API — namespace is `Microsoft.OpenApi`, not `.Models`, and security requirements key off
+      `OpenApiSecuritySchemeReference` rather than embedding a `Reference` on `OpenApiSecurityScheme`
+      — differs from older Swashbuckle tutorials).
+- [x] `/health` endpoint (self + RabbitMQ), anonymous access.
+- [x] Checkpoint: `dotnet build` clean, `dotnet test` 24/24 green; manual smoke test via `curl`
+      confirmed 401 (no/bad key), 400 (validation), and 503 (RabbitMQ down) all return the
+      expected ProblemDetails shape.
 
 ## Phase 6 — Tests
 

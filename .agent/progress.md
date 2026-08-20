@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 5 — Transaction endpoint wiring & cross-cutting (starting).
+Phase 6 — Unit + integration tests (starting).
 
 ## Work completed
 
@@ -36,20 +36,33 @@ Phase 5 — Transaction endpoint wiring & cross-cutting (starting).
   publisher (3: broker accepts, broker rejects/throws, connection unavailable) — all via
   NSubstitute mocks of `IConnection`/`IChannel`, no real broker required.
 
+- Phase 5: `PartnerTransactionsController` (validate → verify → publish → 202/400/422/503),
+  `GlobalExceptionHandler`, `ApiKeyAuthenticationHandler` (`X-Api-Key`, ProblemDetails 401),
+  Swagger API-key security definition, `/health` mapped. Manually smoke-tested with `curl`:
+  401 without/with-wrong key, 400 ProblemDetails for invalid amount, 503 ProblemDetails when
+  RabbitMQ is down (publish path). `Program` made `public partial` for `WebApplicationFactory`
+  in Phase 6.
+
 ## Known issues
 
-- None currently. Note: RabbitMQ.Client 7.x API (async-first: `CreateChannelAsync`,
-  `BasicPublishAsync`, `CreateChannelOptions` for publisher confirms) differs substantially from
-  the older 6.x synchronous API — if extending this code, check the installed package's XML docs
-  rather than assuming older tutorials/StackOverflow answers apply.
+- None currently. Notes for future sessions:
+  - RabbitMQ.Client 7.x API (async-first: `CreateChannelAsync`, `BasicPublishAsync`,
+    `CreateChannelOptions` for publisher confirms) differs substantially from the older 6.x
+    synchronous API — check the installed package's XML docs rather than assuming older
+    tutorials/StackOverflow answers apply.
+  - Microsoft.OpenApi v2 (pulled in by Swashbuckle.AspNetCore 10.x) moved types out of
+    `Microsoft.OpenApi.Models` into `Microsoft.OpenApi`, and security requirements now key off
+    `OpenApiSecuritySchemeReference` (constructed with the `OpenApiDocument` from
+    `AddSecurityRequirement`'s factory callback) instead of an `OpenApiSecurityScheme` with an
+    embedded `Reference` property.
 
 ## Remaining work
 
-- Phases 5–8 per `.agent/implementation-plan.md`: endpoint wiring (controller, global exception
-  handler, API-key auth, Swagger), remaining tests (controller/integration), Docker/README, final
-  verification.
+- Phases 6–8 per `.agent/implementation-plan.md`: remaining tests (controller/integration),
+  Docker/README, final verification.
 
 ## Recommended next action
 
-Proceed to Phase 5: `PartnerTransactionsController` wiring validate → verify → publish →
-response/ProblemDetails, global `IExceptionHandler`, API-key auth handler, Swagger.
+Proceed to Phase 6: `WebApplicationFactory` integration tests (happy path 202, validation 400,
+verification failure paths, publisher failure 503, auth 401) with a substituted
+`ITransactionPublisher`.
