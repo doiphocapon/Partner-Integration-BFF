@@ -2,10 +2,12 @@ using FluentValidation;
 using Microsoft.Extensions.Http.Resilience;
 using Microsoft.Extensions.Options;
 using PartnerIntegrationBFF.Api.Contracts;
+using PartnerIntegrationBFF.Api.Messaging;
 using PartnerIntegrationBFF.Api.Options;
 using PartnerIntegrationBFF.Api.Services;
 using PartnerIntegrationBFF.Api.Validation;
 using Polly;
+using RabbitMQ.Client;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -48,6 +50,18 @@ builder.Services
         pipeline.AddTimeout(TimeSpan.FromMilliseconds(options.AttemptTimeoutMilliseconds));
     });
 
+builder.Services.AddOptions<RabbitMqOptions>()
+    .BindConfiguration(RabbitMqOptions.SectionName)
+    .ValidateOnStart();
+
+builder.Services.AddSingleton<IRabbitMqConnectionProvider, RabbitMqConnectionProvider>();
+builder.Services.AddSingleton<ITransactionPublisher, RabbitMqTransactionPublisher>();
+
+builder.Services.AddHealthChecks()
+    .AddRabbitMQ(
+        sp => sp.GetRequiredService<IRabbitMqConnectionProvider>().GetConnectionAsync(CancellationToken.None),
+        name: "rabbitmq");
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -62,5 +76,6 @@ app.UseHttpsRedirection();
 app.UseAuthorization();
 
 app.MapControllers();
+app.MapHealthChecks("/health");
 
 app.Run();

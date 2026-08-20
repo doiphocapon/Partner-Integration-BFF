@@ -44,13 +44,23 @@ Status legend: `[ ]` not started, `[~]` in progress, `[x]` completed, `[!]` bloc
 
 ## Phase 4 — Messaging
 
-- [ ] `ITransactionPublisher` abstraction.
-- [ ] `RabbitMqTransactionPublisher` using publisher confirms; typed failure result (not a bool)
-      so callers can't misreport success.
-- [ ] RabbitMQ connection/options via `IOptions<T>`, no hard-coded credentials/URLs.
-- [ ] docker-compose RabbitMQ service.
-- [ ] Health check for RabbitMQ.
-- [ ] Checkpoint: unit tests for publish-success/publish-failure behaviour with a fake channel.
+- [x] `ITransactionPublisher` abstraction (`Task<PublishResult>`, not a bool, so failure carries a
+      reason and can't be silently coerced to success).
+- [x] `RabbitMqTransactionPublisher` using publisher confirms (`CreateChannelOptions` with
+      `publisherConfirmationsEnabled`/`publisherConfirmationTrackingEnabled`, `mandatory: true`
+      publish) — `BasicPublishAsync` awaits the broker's ack/nack, any failure/exception maps to
+      `PublishResult.Failed`, never a false-positive `Published`.
+- [x] `IRabbitMqConnectionProvider` — single long-lived connection shared by the publisher and
+      the health check (avoids leaking a connection per publish/health-check call).
+- [x] RabbitMQ connection/options via `IOptions<RabbitMqOptions>` bound from configuration; local
+      dev/docker-compose use RabbitMQ's own well-known `guest`/`guest` default (loopback-only by
+      broker default), no other hard-coded credentials/URLs.
+- [x] Health check for RabbitMQ (`AddHealthChecks().AddRabbitMQ(...)`, reuses the same connection
+      provider), mapped at `/health`.
+- [ ] docker-compose RabbitMQ service — deferred to Phase 7 alongside the Dockerfile.
+- [x] Checkpoint: 3 new unit tests (24 total) for publish-success, broker-rejects-message, and
+      connection-unavailable, using NSubstitute mocks of `IConnection`/`IChannel` (no real broker
+      needed for `dotnet test`).
 
 ## Phase 5 — Endpoint wiring & cross-cutting
 
