@@ -2,25 +2,23 @@
 
 ## Current phase
 
-Phase 1 — Scaffolding (finishing up).
+Phase 3 — Partner verification (starting).
 
 ## Work completed
 
-- Inspected environment: repo was empty, no git, only .NET 10 SDK present, Docker available.
-- Installed .NET 8 SDK (8.0.424) via winget; pinned repo to it with `global.json`.
-- Confirmed architecture decisions with user (see `.agent/decisions.md`).
-- Created solution `PartnerIntegrationBFF.sln` with:
-  - `src/PartnerIntegrationBFF.Api` (ASP.NET Core Web API, controllers)
-  - `tests/PartnerIntegrationBFF.UnitTests` (xUnit)
-  - `tests/PartnerIntegrationBFF.IntegrationTests` (xUnit)
-- Installed NuGet packages (see implementation-plan.md Phase 1).
-- Added `Directory.Build.props` (nullable, analyzers, warnings-as-errors), `.gitignore`.
-- Removed template boilerplate (WeatherForecast controller/model).
-- Created `CLAUDE.md` and `.agent/*` docs.
+- Phase 1: environment inspected, .NET 8 SDK installed and pinned via `global.json`, solution +
+  3 projects scaffolded, packages installed, agent docs created, committed
+  (`7b6f40e Scaffold solution, projects, and agent docs`).
+- Phase 2: `TransactionRequest`/`TransactionAcceptedResponse` contracts, `SupportedCurrenciesOptions`,
+  `TransactionRequestValidator` (FluentValidation, case-insensitive currency allowlist),
+  `ValidationProblemDetailsFactory`. Registered in `Program.cs` (options + scoped validator, no
+  MVC auto-validation filter — validator is called explicitly by the controller in Phase 5).
 
 ## Tests executed and results
 
-- `dotnet build` at repo root: succeeded, 0 warnings, 0 errors (last run after scaffolding).
+- `dotnet build`: succeeded, 0 warnings, 0 errors.
+- `dotnet test` (UnitTests): 16/16 passed — required-field, amount, and currency validation
+  scenarios for `TransactionRequestValidator`.
 
 ## Known issues
 
@@ -28,10 +26,10 @@ Phase 1 — Scaffolding (finishing up).
 
 ## Remaining work
 
-- Phases 2–8 per `.agent/implementation-plan.md`: domain/validation, verification client +
-  dummy endpoint, RabbitMQ messaging, endpoint wiring, tests, Docker/README, final verification.
+- Phases 3–8 per `.agent/implementation-plan.md`: verification client + dummy endpoint, RabbitMQ
+  messaging, endpoint wiring, remaining tests, Docker/README, final verification.
 
 ## Recommended next action
 
-Proceed to Phase 2 (domain models, currency allowlist, FluentValidation validator, ProblemDetails
-error shape).
+Proceed to Phase 3: dummy verification endpoint with injectable randomness, typed `HttpClient`
++ `Microsoft.Extensions.Http.Resilience` retry pipeline, deterministic retry tests.

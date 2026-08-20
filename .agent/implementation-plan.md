@@ -19,13 +19,13 @@ Status legend: `[ ]` not started, `[~]` in progress, `[x]` completed, `[!]` bloc
 
 ## Phase 2 — Domain & validation
 
-- [ ] `TransactionRequest`/`TransactionResponse` models (`decimal` amount, `DateTimeOffset`
-      timestamp).
-- [ ] Currency allowlist (configurable via options).
-- [ ] `TransactionRequestValidator` (FluentValidation): required fields, `amount > 0`, currency
-      allowlist.
-- [ ] ProblemDetails error shape conventions (extension methods / factory).
-- [ ] Checkpoint: unit tests for validator pass.
+- [x] `TransactionRequest`/`TransactionAcceptedResponse` models (`decimal` amount,
+      `DateTimeOffset` timestamp).
+- [x] Currency allowlist (`SupportedCurrenciesOptions`, configurable via `appsettings.json`).
+- [x] `TransactionRequestValidator` (FluentValidation): required fields, `amount > 0`, currency
+      allowlist (case-insensitive).
+- [x] ProblemDetails error shape conventions (`ValidationProblemDetailsFactory`).
+- [x] Checkpoint: 16 unit tests for validator pass (`dotnet test`).
 
 ## Phase 3 — Partner verification
 
