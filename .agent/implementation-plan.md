@@ -121,7 +121,11 @@ Status legend: `[ ]` not started, `[~]` in progress, `[x]` completed, `[!]` bloc
 
 ## Phase 8 — Final verification
 
-- [ ] `dotnet build` (clean).
-- [ ] `dotnet test` (clean).
-- [ ] `docker compose up --build`; manual `POST /api/v1/partner/transactions` against live
-      RabbitMQ; confirm message on queue; confirm `/health` reports both API and RabbitMQ.
+- [x] `dotnet build` at repo root: 0 Warning(s), 0 Error(s).
+- [x] `dotnet test` at repo root: 36/36 passed (29 unit + 7 integration).
+- [x] `docker compose up --build` (done in Phase 7): `/health` → `Healthy`; live `POST
+      /api/v1/partner/transactions` → `202 Accepted` on first attempt; RabbitMQ management API
+      confirmed the message present on `partner-transactions` (`messages: 1`, `publish: 1`); live
+      invalid-amount request → `400` ProblemDetails. Stack torn down afterward.
+- [x] Final consistency pass over `.agent/*` and `CLAUDE.md` — all phases marked complete, all
+      decisions recorded, progress log current.

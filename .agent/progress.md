@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 8 — Final verification (starting).
+Complete. All 8 phases done; assessment implementation finished.
 
 ## Work completed
 
@@ -73,12 +73,18 @@ Phase 8 — Final verification (starting).
   `partner-transactions` (`messages: 1`) → live 400 for an invalid request → `docker compose
   down`.
 
+- Phase 8: final `dotnet build` (0 warnings/errors) and `dotnet test` (36/36 green) at the repo
+  root, re-confirmed after the Phase 7 Docker changes. Live docker-compose verification was
+  already done in Phase 7 (see above) and re-reviewed here — no further changes needed.
+
 ## Remaining work
 
-- Phase 8: final full-repo verification pass (`dotnet build`, `dotnet test`) and a read-through
-  of all `.agent/` docs for consistency before calling the assessment complete.
+None — all 8 phases in `.agent/implementation-plan.md` are complete. Everything is committed on
+`master` (not pushed anywhere).
 
 ## Recommended next action
 
-Run final `dotnet build` + `dotnet test` at the repo root, confirm 0 warnings/36 tests green, then
-do a last consistency pass over `.agent/*` and `CLAUDE.md`.
+If resuming this project later: re-run `dotnet test` and `docker compose up` to reconfirm nothing
+has drifted, then consider the "Production considerations" section in the README (idempotency,
+outbox, circuit breaker, real secret management) as the natural next scope if extending this
+beyond the assessment.
