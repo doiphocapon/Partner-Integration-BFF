@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 6 — Unit + integration tests (starting).
+Phase 7 — Dockerfile, docker-compose, README (starting).
 
 ## Work completed
 
@@ -56,13 +56,20 @@ Phase 6 — Unit + integration tests (starting).
     `AddSecurityRequirement`'s factory callback) instead of an `OpenApiSecurityScheme` with an
     embedded `Reference` property.
 
+- Phase 6: `PartnerTransactionsControllerTests` (5 unit tests, NSubstitute doubles for
+  validator/verification/publisher — invalid/not-verified/unavailable/publish-failed never
+  publish; valid+verified publishes exactly once with correct message content).
+  `TransactionsApiFactory` (`WebApplicationFactory<Program>`) + 7 integration tests covering
+  401/400/422/503/202. Integration tests substitute both `IPartnerVerificationService` and
+  `ITransactionPublisher` (see decisions.md #10 for why the real self-HTTP verification call
+  isn't re-exercised here). `dotnet test` at repo root: 36/36 green (29 unit + 7 integration).
+
 ## Remaining work
 
-- Phases 6–8 per `.agent/implementation-plan.md`: remaining tests (controller/integration),
-  Docker/README, final verification.
+- Phases 7–8 per `.agent/implementation-plan.md`: Dockerfile, docker-compose, README, final
+  verification (build/test/docker compose up smoke test).
 
 ## Recommended next action
 
-Proceed to Phase 6: `WebApplicationFactory` integration tests (happy path 202, validation 400,
-verification failure paths, publisher failure 503, auth 401) with a substituted
-`ITransactionPublisher`.
+Proceed to Phase 7: Dockerfile (multi-stage, non-root), docker-compose.yml (API + RabbitMQ),
+README (architecture, flow, assumptions, commands, trade-offs).

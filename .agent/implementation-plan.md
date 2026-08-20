@@ -82,15 +82,22 @@ Status legend: `[ ]` not started, `[~]` in progress, `[x]` completed, `[!]` bloc
 
 ## Phase 6 — Tests
 
-- [ ] Unit: required-field validation, amount validation, currency validation.
-- [ ] Unit: successful verification, retry-after-timeout, success-after-retry,
-      failure-after-retry-exhaustion (deterministic attempt counts).
-- [ ] Unit: invalid/unverified transaction never reaches publisher (mock verify/publish
-      interactions).
-- [ ] Unit: verified + valid transaction is published exactly once with expected content.
-- [ ] Integration (`WebApplicationFactory`): end-to-end happy path (202 + body shape), validation
-      failure (400 ProblemDetails), verification failure paths, publisher failure path (503).
-- [ ] Checkpoint: `dotnet test` all green, 0 warnings.
+- [x] Unit: required-field validation, amount validation, currency validation (16, Phase 2).
+- [x] Unit: successful verification, retry-after-timeout, success-after-retry,
+      failure-after-retry-exhaustion (deterministic attempt counts) (5, Phase 3).
+- [x] Unit: RabbitMQ publish success/broker-rejects/connection-unavailable (3, Phase 4).
+- [x] Unit: `PartnerTransactionsController` — invalid request / not-verified / verification-
+      unavailable / publish-failure never call the publisher (or never call verification for
+      invalid input); valid+verified publishes exactly once with correct message content (5,
+      new).
+- [x] Integration (`WebApplicationFactory`, `TransactionsApiFactory` substituting
+      `IPartnerVerificationService` + `ITransactionPublisher`): 401 (missing/wrong API key), 400
+      (validation, publisher never called), 422 (not verified), 503 (verification unavailable /
+      broker publish failure), 202 (accepted + body shape + publish called exactly once) (7,
+      new). Real HTTP verification pipeline is covered by unit tests, not re-exercised here — see
+      `.agent/decisions.md` #10 for why.
+- [x] Checkpoint: `dotnet build` 0 warnings/errors; `dotnet test` 36/36 green (29 unit + 7
+      integration).
 
 ## Phase 7 — Docker & docs
 

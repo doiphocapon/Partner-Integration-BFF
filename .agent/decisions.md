@@ -109,3 +109,25 @@
   allows normal local `dotnet build`/`test`/`run` without depending on Docker for every command.
 - **Trade-off**: None once installed.
 - **Phase**: 1.
+
+## 10. Integration tests substitute both external dependencies
+
+- **Decision**: `WebApplicationFactory`-based tests (`TransactionsApiFactory`) substitute both
+  `IPartnerVerificationService` and `ITransactionPublisher` at the DI boundary, rather than
+  letting the request hit the real internal verification endpoint over HTTP.
+- **Options considered**: (a) substitute both dependencies, (b) let the real HTTP call to the
+  dummy verification endpoint happen and force determinism via a configurable failure
+  probability set to 0/1 per test.
+- **Selected**: (a).
+- **Reason**: `WebApplicationFactory`'s in-memory `TestServer` doesn't listen on a real TCP port,
+  but the typed `HttpClient` used by `HttpPartnerVerificationService` makes a real socket
+  connection to `PartnerVerification:BaseUrl` — the two don't connect without extra plumbing
+  (dynamically discovering the Kestrel port and rewriting config before the first request), which
+  is disproportionate ceremony for this scope. The real HTTP + resilience pipeline is already
+  proven deterministically by `HttpPartnerVerificationServiceTests` (unit); integration tests add
+  value by proving controller/middleware wiring (auth, validation, status-code mapping, publish
+  gating), which doesn't require re-exercising that HTTP round-trip.
+- **Trade-off**: No automated test exercises the full request→self-HTTP-call→retry→controller
+  path together. Mitigated by manual `curl` smoke testing (see `.agent/progress.md`) and the
+  Phase 8 docker-compose end-to-end check.
+- **Phase**: 6.
