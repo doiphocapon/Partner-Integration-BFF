@@ -1,0 +1,34 @@
+services:
+  rabbitmq:
+    image: rabbitmq:3.13-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-app}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-app-dev-only-password}
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  api:
+    build:
+      context: .
+      dockerfile: src/PartnerIntegrationBFF.Api/Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://+:8080
+      # The verification "external" dependency is an internal endpoint on this same
+      # container, so it's always a loopback call — see .agent/decisions.md #1.
+      PartnerVerification__BaseUrl: http://localhost:8080/
+      RabbitMq__HostName: rabbitmq
+      RabbitMq__UserName: ${RABBITMQ_USER:-app}
+      RabbitMq__Password: ${RABBITMQ_PASSWORD:-app-dev-only-password}
+      Security__ApiKey: ${API_KEY:-local-dev-partner-key}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy

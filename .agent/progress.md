@@ -2,7 +2,7 @@
 
 ## Current phase
 
-Phase 7 — Dockerfile, docker-compose, README (starting).
+Phase 8 — Final verification (starting).
 
 ## Work completed
 
@@ -64,12 +64,21 @@ Phase 7 — Dockerfile, docker-compose, README (starting).
   `ITransactionPublisher` (see decisions.md #10 for why the real self-HTTP verification call
   isn't re-exercised here). `dotnet test` at repo root: 36/36 green (29 unit + 7 integration).
 
+- Phase 7: Dockerfile (multi-stage, `$APP_UID` non-root), docker-compose.yml (API + RabbitMQ,
+  healthcheck-gated startup), `.dockerignore`, README. Fixed a real bug found only by running the
+  stack: RabbitMQ's `guest` user is loopback-only, so cross-container auth from the `api`
+  container failed until switched to a dedicated `app` user (decisions.md #11). Verified live:
+  `docker compose up -d` → `/health` Healthy → real `POST /api/v1/partner/transactions` → `202`
+  on first attempt → confirmed via RabbitMQ management API that the message landed on
+  `partner-transactions` (`messages: 1`) → live 400 for an invalid request → `docker compose
+  down`.
+
 ## Remaining work
 
-- Phases 7–8 per `.agent/implementation-plan.md`: Dockerfile, docker-compose, README, final
-  verification (build/test/docker compose up smoke test).
+- Phase 8: final full-repo verification pass (`dotnet build`, `dotnet test`) and a read-through
+  of all `.agent/` docs for consistency before calling the assessment complete.
 
 ## Recommended next action
 
-Proceed to Phase 7: Dockerfile (multi-stage, non-root), docker-compose.yml (API + RabbitMQ),
-README (architecture, flow, assumptions, commands, trade-offs).
+Run final `dotnet build` + `dotnet test` at the repo root, confirm 0 warnings/36 tests green, then
+do a last consistency pass over `.agent/*` and `CLAUDE.md`.

@@ -131,3 +131,18 @@
   path together. Mitigated by manual `curl` smoke testing (see `.agent/progress.md`) and the
   Phase 8 docker-compose end-to-end check.
 - **Phase**: 6.
+
+## 11. RabbitMQ credentials — dedicated `app` user, not `guest`
+
+- **Decision**: Both `appsettings.json` and `docker-compose.yml` use a non-`guest` RabbitMQ user
+  (`app` / a documented placeholder password), configurable via `RabbitMq__UserName` /
+  `RabbitMq__Password` env vars.
+- **Reason**: RabbitMQ's built-in `guest` account is restricted by the broker itself to
+  loopback-only connections. In docker-compose, the API container connects to the `rabbitmq`
+  container over the Docker network — not loopback from the broker's point of view — so `guest`/
+  `guest` is rejected with "PLAIN login refused" even though it "looks like" a normal local-dev
+  credential. Discovered and fixed during the Phase 7 live docker-compose smoke test.
+- **Trade-off**: One more env var to keep in sync between the `rabbitmq` service definition and
+  the `api` service's `RabbitMq__*` settings; documented in README as a local-dev placeholder,
+  not a production credential.
+- **Phase**: 7.

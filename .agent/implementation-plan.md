@@ -101,12 +101,23 @@ Status legend: `[ ]` not started, `[~]` in progress, `[x]` completed, `[!]` bloc
 
 ## Phase 7 — Docker & docs
 
-- [ ] `Dockerfile` (multi-stage build, non-root user).
-- [ ] `docker-compose.yml` (API + RabbitMQ, healthchecks, no hard-coded secrets in the file —
-      via env vars with safe local defaults).
-- [ ] README (architecture, request-flow diagram, assumptions, run/test commands, trade-offs,
-      production considerations: outbox, idempotency, circuit breaker, JWT).
-- [ ] Update `.agent/progress.md`.
+- [x] `Dockerfile` (multi-stage build; `USER $APP_UID` non-root, matches the standard .NET 8
+      container template).
+- [x] `docker-compose.yml` (API + RabbitMQ, RabbitMQ healthcheck gating API startup via
+      `depends_on: condition: service_healthy`; credentials/API key via env vars with local-dev
+      defaults, no secrets hard-coded).
+- [x] Switched RabbitMQ credentials off the built-in `guest` account (loopback-only by broker
+      default, which breaks cross-container auth) to a dedicated `app` user — appsettings.json
+      and docker-compose.yml updated together.
+- [x] README (architecture + text request-flow diagram, project layout, run/test commands,
+      decisions/trade-offs table, production considerations, assumptions).
+- [x] `.dockerignore` added.
+- [x] Checkpoint: `docker compose build` + `docker compose up -d` succeeded; `/health` returned
+      `Healthy`; a real `POST /api/v1/partner/transactions` returned `202 Accepted` on the first
+      attempt (partner verification passed) and the message was confirmed present
+      (`messages: 1`, `publish: 1`) on the `partner-transactions` queue via the RabbitMQ
+      management API; a live invalid-amount request returned `400` ProblemDetails. Stack torn
+      down with `docker compose down` after verification.
 
 ## Phase 8 — Final verification
 
