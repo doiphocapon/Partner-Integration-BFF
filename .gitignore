@@ -1,0 +1,22 @@
+## .NET
+bin/
+obj/
+*.user
+*.suo
+
+## IDE
+.vs/
+.vscode/
+*.swp
+
+## Test results
+[Tt]est[Rr]esult*/
+*.trx
+coverage*/
+
+## OS
+.DS_Store
+Thumbs.db
+
+## Local tooling
+.claude/settings.local.json
